@@ -1,0 +1,6 @@
+# Only needed to REBUILD cached data (models, prices, evaluation). Not needed to run the dashboard.
+-r requirements.txt
+transformers
+torch
+scikit-learn
+yfinance

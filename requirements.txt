@@ -2,8 +2,4 @@ streamlit
 pandas
 numpy
 requests
-scikit-learn
-transformers
-torch
-yfinance
 matplotlib
