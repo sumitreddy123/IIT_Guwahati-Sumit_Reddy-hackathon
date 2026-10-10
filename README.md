@@ -1,13 +1,13 @@
 # AI/NLP Risk Engine - S&P Global & Crisil Campus Hackathon
 
 **Candidate Name:** Sumit Reddy
-**College Email ID:** TODO
+**College Email ID:** sumit.reddy@iitg.ac.in
 **College / Campus:** IIT Guwahati
-**Demo Video Link:** TODO (YouTube, unlisted)
+**Demo Video Link:** TODO
 **Slide Deck Link (if hosted externally):** see docs/presentation.pdf
 
 ## 1. Project Overview / Problem Statement & Approach
-TODO (2-3 paragraphs)
+TODO
 
 ## 2. Architecture & Tech Stack
 TODO (embed docs/architecture.png)
