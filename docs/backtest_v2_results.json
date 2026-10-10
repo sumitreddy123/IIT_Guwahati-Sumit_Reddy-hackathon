@@ -1,0 +1,73 @@
+{
+  "stocks": 22,
+  "tweets_used": 8233,
+  "tweets_per_stock_week": 6.9,
+  "K": 0.3,
+  "cost_bps": 10.0,
+  "all": {
+    "mean_rank_ic": 0.0121,
+    "ic_t_stat": 0.42,
+    "equal_weight": {
+      "total_return": -0.3224,
+      "sharpe": -1.088,
+      "max_drawdown": -0.4002,
+      "weeks": 54
+    },
+    "long_only_net": {
+      "total_return": -0.3342,
+      "sharpe": -1.15,
+      "max_drawdown": -0.4106,
+      "weeks": 54
+    },
+    "long_short_net": {
+      "total_return": -0.2667,
+      "sharpe": -1.084,
+      "max_drawdown": -0.2969,
+      "weeks": 54
+    }
+  },
+  "train_first_half": {
+    "mean_rank_ic": 0.0672,
+    "ic_t_stat": 1.58,
+    "equal_weight": {
+      "total_return": -0.0505,
+      "sharpe": -0.223,
+      "max_drawdown": -0.2562,
+      "weeks": 27
+    },
+    "long_only_net": {
+      "total_return": -0.0463,
+      "sharpe": -0.187,
+      "max_drawdown": -0.2536,
+      "weeks": 27
+    },
+    "long_short_net": {
+      "total_return": -0.0126,
+      "sharpe": 0.007,
+      "max_drawdown": -0.1912,
+      "weeks": 27
+    }
+  },
+  "test_second_half": {
+    "mean_rank_ic": -0.0409,
+    "ic_t_stat": -1.11,
+    "equal_weight": {
+      "total_return": -0.2864,
+      "sharpe": -1.831,
+      "max_drawdown": -0.2534,
+      "weeks": 27
+    },
+    "long_only_net": {
+      "total_return": -0.3018,
+      "sharpe": -2.01,
+      "max_drawdown": -0.2676,
+      "weeks": 27
+    },
+    "long_short_net": {
+      "total_return": -0.2573,
+      "sharpe": -2.056,
+      "max_drawdown": -0.2969,
+      "weeks": 27
+    }
+  }
+}
