@@ -1,0 +1,18 @@
+{
+  "weeks": 54,
+  "stocks": 22,
+  "tweets_used": 1405,
+  "sentiment_strategy": {
+    "total_return": -0.3167,
+    "ann_vol": 0.3088,
+    "sharpe": -1.032,
+    "max_drawdown": -0.4021,
+    "avg_weekly_turnover": 0.0472
+  },
+  "equal_weight": {
+    "total_return": -0.3224,
+    "ann_vol": 0.3022,
+    "sharpe": -1.088,
+    "max_drawdown": -0.4002
+  }
+}
