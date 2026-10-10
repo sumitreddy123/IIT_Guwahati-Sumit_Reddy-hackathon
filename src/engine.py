@@ -14,6 +14,19 @@ EVENTS = {  # keywords, base severity (1-10)
     "Credit Event": ("default downgrade bankruptcy debt insolvency restructuring".split(), 8),
     "Merger/Acquisition": ("acquire acquisition merger takeover buyout deal".split(), 5),
     "Product Launch": ("launch unveil launches unveils release introduces".split(), 3),
+    "Earnings": ("earnings beats profit revenue guidance expectations quarterly".split(), 4),
+    "Regulatory/Legal": ("lawsuit fine regulatory probe recall antitrust sec investigation".split(), 6),
+}
+# zero-shot works better with descriptive labels than with bare class names
+LABELS = {
+    "geopolitical conflict, war or sanctions": "Geopolitical",
+    "macroeconomic news such as inflation, interest rates or GDP": "Macroeconomic",
+    "credit event such as a default, downgrade or bankruptcy": "Credit Event",
+    "merger or acquisition": "Merger/Acquisition",
+    "product launch": "Product Launch",
+    "company earnings or financial performance": "Earnings",
+    "legal or regulatory action, lawsuit or product recall": "Regulatory/Legal",
+    "other": "Other",
 }
 POS = set("strong record beats upbeat bullish gains growth lift surge easing ease stabilize stabilizes progress agrees fade".split())
 NEG = set("fall worried plunges crash downgraded default bankruptcy lawsuit fine fears escalate strikes recall sell-off risk slowdown brace".split())
@@ -62,14 +75,19 @@ def sentiment(text):
 
 def classify_event(text):
     """Returns (label, confidence). Zero-shot if available, else keyword match."""
-    z = _pipe(*ZEROSHOT)
-    if z:
-        r = z(text, candidate_labels=list(EVENTS) + ["Other"])
-        return r["labels"][0], round(r["scores"][0], 2)
     low = text.lower()
-    scores = {e: sum(k in low for k in kw) for e, (kw, _) in EVENTS.items()}
-    best = max(scores, key=scores.get)
-    return (best, 0.6) if scores[best] else ("Other", 0.3)
+    hits = {e: sum(bool(re.search(rf"\b{k}", low)) for k in kw) for e, (kw, _) in EVENTS.items()}
+    kbest = max(hits, key=hits.get)
+    z = _pipe(*ZEROSHOT)
+    if not z:
+        return (kbest, 0.6) if hits[kbest] else ("Other", 0.3)
+    r = z(text, candidate_labels=list(LABELS))
+    label, conf = LABELS[r["labels"][0]], round(r["scores"][0], 2)
+    if conf < 0.6 and hits[kbest]:  # weak model confidence: trust a keyword match
+        return kbest, conf
+    if conf < 0.4:
+        return "Other", conf
+    return label, conf
 
 def extract_tickers(text):
     found = re.findall(r"\$([A-Z]{1,5})\b", text)

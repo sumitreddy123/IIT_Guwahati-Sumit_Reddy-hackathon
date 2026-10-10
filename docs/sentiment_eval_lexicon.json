@@ -1,0 +1,6 @@
+{
+  "backend": "lexicon",
+  "n": 4846,
+  "accuracy": 0.603,
+  "macro_f1": 0.299
+}

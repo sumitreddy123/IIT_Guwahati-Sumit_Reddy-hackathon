@@ -1,0 +1,6 @@
+{
+  "backend": "finbert",
+  "n": 4846,
+  "accuracy": 0.828,
+  "macro_f1": 0.83
+}

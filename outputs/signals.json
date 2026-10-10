@@ -6,9 +6,9 @@
     "company": "XOM",
     "text": "Missile strikes and new sanctions escalate conflict, oil supply fears grow",
     "tickers": [],
-    "sentiment_score": -1.0,
+    "sentiment_score": -0.897,
     "event_class": "Geopolitical",
-    "event_confidence": 0.6,
+    "event_confidence": 0.83,
     "impact_score": 10
   },
   {
@@ -20,10 +20,10 @@
     "tickers": [
       "AAPL"
     ],
-    "sentiment_score": 1.0,
+    "sentiment_score": 0.918,
     "event_class": "Product Launch",
-    "event_confidence": 0.6,
-    "impact_score": 4.1
+    "event_confidence": 0.88,
+    "impact_score": 3.9
   },
   {
     "id": 3,
@@ -32,10 +32,10 @@
     "company": "JPM",
     "text": "Fed signals rate hike as inflation surges; banks brace for slowdown",
     "tickers": [],
-    "sentiment_score": -1.0,
+    "sentiment_score": -0.174,
     "event_class": "Macroeconomic",
-    "event_confidence": 0.6,
-    "impact_score": 9.0
+    "event_confidence": 0.89,
+    "impact_score": 4.0
   },
   {
     "id": 4,
@@ -46,10 +46,10 @@
     "tickers": [
       "TSLA"
     ],
-    "sentiment_score": -1.0,
-    "event_class": "Other",
-    "event_confidence": 0.3,
-    "impact_score": 2.8
+    "sentiment_score": -0.955,
+    "event_class": "Regulatory/Legal",
+    "event_confidence": 0.87,
+    "impact_score": 8.0
   },
   {
     "id": 5,
@@ -60,10 +60,10 @@
     "tickers": [
       "MSFT"
     ],
-    "sentiment_score": 1.0,
+    "sentiment_score": 0.818,
     "event_class": "Merger/Acquisition",
-    "event_confidence": 0.6,
-    "impact_score": 7.5
+    "event_confidence": 0.86,
+    "impact_score": 6.6
   },
   {
     "id": 6,
@@ -74,9 +74,9 @@
     "tickers": [
       "BA"
     ],
-    "sentiment_score": -1.0,
+    "sentiment_score": -0.94,
     "event_class": "Credit Event",
-    "event_confidence": 0.6,
+    "event_confidence": 0.46,
     "impact_score": 10
   },
   {
@@ -88,10 +88,10 @@
     "tickers": [
       "NVDA"
     ],
-    "sentiment_score": 1.0,
-    "event_class": "Other",
-    "event_confidence": 0.3,
-    "impact_score": 2.8
+    "sentiment_score": 0.925,
+    "event_class": "Earnings",
+    "event_confidence": 0.77,
+    "impact_score": 5.2
   },
   {
     "id": 8,
@@ -100,10 +100,10 @@
     "company": "XOM",
     "text": "Ceasefire talks progress, tensions ease and oil prices stabilize",
     "tickers": [],
-    "sentiment_score": 1.0,
+    "sentiment_score": 0.898,
     "event_class": "Geopolitical",
-    "event_confidence": 0.6,
-    "impact_score": 10
+    "event_confidence": 0.46,
+    "impact_score": 9.8
   },
   {
     "id": 9,
@@ -114,10 +114,10 @@
     "tickers": [
       "AMZN"
     ],
-    "sentiment_score": 1.0,
+    "sentiment_score": 0.877,
     "event_class": "Product Launch",
-    "event_confidence": 0.6,
-    "impact_score": 4.5
+    "event_confidence": 0.79,
+    "impact_score": 4.1
   },
   {
     "id": 10,
@@ -128,10 +128,10 @@
     "tickers": [
       "META"
     ],
-    "sentiment_score": -1.0,
-    "event_class": "Other",
-    "event_confidence": 0.3,
-    "impact_score": 2.8
+    "sentiment_score": -0.95,
+    "event_class": "Regulatory/Legal",
+    "event_confidence": 0.74,
+    "impact_score": 8.0
   },
   {
     "id": 11,
@@ -140,10 +140,10 @@
     "company": "JPM",
     "text": "Strong GDP and falling unemployment lift markets, recession fears fade",
     "tickers": [],
-    "sentiment_score": 0.5,
+    "sentiment_score": -0.743,
     "event_class": "Macroeconomic",
-    "event_confidence": 0.6,
-    "impact_score": 6.0
+    "event_confidence": 0.7,
+    "impact_score": 7.5
   },
   {
     "id": 12,
@@ -154,9 +154,9 @@
     "tickers": [
       "BA"
     ],
-    "sentiment_score": -1.0,
+    "sentiment_score": -0.904,
     "event_class": "Credit Event",
-    "event_confidence": 0.6,
+    "event_confidence": 0.84,
     "impact_score": 10
   }
 ]
