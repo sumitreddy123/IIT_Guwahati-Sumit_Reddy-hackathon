@@ -1,0 +1,162 @@
+[
+  {
+    "id": 1,
+    "t": 0,
+    "source": "news",
+    "company": "XOM",
+    "text": "Missile strikes and new sanctions escalate conflict, oil supply fears grow",
+    "tickers": [],
+    "sentiment_score": -1.0,
+    "event_class": "Geopolitical",
+    "event_confidence": 0.6,
+    "impact_score": 10
+  },
+  {
+    "id": 2,
+    "t": 0,
+    "source": "twitter",
+    "company": "AAPL",
+    "text": "Apple unveils new iPhone, strong demand and record preorders $AAPL",
+    "tickers": [
+      "AAPL"
+    ],
+    "sentiment_score": 1.0,
+    "event_class": "Product Launch",
+    "event_confidence": 0.6,
+    "impact_score": 4.1
+  },
+  {
+    "id": 3,
+    "t": 1,
+    "source": "news",
+    "company": "JPM",
+    "text": "Fed signals rate hike as inflation surges; banks brace for slowdown",
+    "tickers": [],
+    "sentiment_score": -1.0,
+    "event_class": "Macroeconomic",
+    "event_confidence": 0.6,
+    "impact_score": 9.0
+  },
+  {
+    "id": 4,
+    "t": 1,
+    "source": "twitter",
+    "company": "TSLA",
+    "text": "Tesla recall expands, shares fall sharply, investors worried $TSLA",
+    "tickers": [
+      "TSLA"
+    ],
+    "sentiment_score": -1.0,
+    "event_class": "Other",
+    "event_confidence": 0.3,
+    "impact_score": 2.8
+  },
+  {
+    "id": 5,
+    "t": 2,
+    "source": "news",
+    "company": "MSFT",
+    "text": "Microsoft agrees to acquire AI startup in major deal, analysts upbeat",
+    "tickers": [
+      "MSFT"
+    ],
+    "sentiment_score": 1.0,
+    "event_class": "Merger/Acquisition",
+    "event_confidence": 0.6,
+    "impact_score": 7.5
+  },
+  {
+    "id": 6,
+    "t": 2,
+    "source": "news",
+    "company": "BA",
+    "text": "Boeing credit rating downgraded as debt concerns and default risk rise",
+    "tickers": [
+      "BA"
+    ],
+    "sentiment_score": -1.0,
+    "event_class": "Credit Event",
+    "event_confidence": 0.6,
+    "impact_score": 10
+  },
+  {
+    "id": 7,
+    "t": 3,
+    "source": "twitter",
+    "company": "NVDA",
+    "text": "Nvidia beats expectations, record growth, bullish outlook $NVDA",
+    "tickers": [
+      "NVDA"
+    ],
+    "sentiment_score": 1.0,
+    "event_class": "Other",
+    "event_confidence": 0.3,
+    "impact_score": 2.8
+  },
+  {
+    "id": 8,
+    "t": 3,
+    "source": "news",
+    "company": "XOM",
+    "text": "Ceasefire talks progress, tensions ease and oil prices stabilize",
+    "tickers": [],
+    "sentiment_score": 1.0,
+    "event_class": "Geopolitical",
+    "event_confidence": 0.6,
+    "impact_score": 10
+  },
+  {
+    "id": 9,
+    "t": 4,
+    "source": "news",
+    "company": "AMZN",
+    "text": "Amazon launches new logistics product, profit gains expected",
+    "tickers": [
+      "AMZN"
+    ],
+    "sentiment_score": 1.0,
+    "event_class": "Product Launch",
+    "event_confidence": 0.6,
+    "impact_score": 4.5
+  },
+  {
+    "id": 10,
+    "t": 4,
+    "source": "twitter",
+    "company": "META",
+    "text": "Meta faces lawsuit and fine, stock plunges on regulatory fears $META",
+    "tickers": [
+      "META"
+    ],
+    "sentiment_score": -1.0,
+    "event_class": "Other",
+    "event_confidence": 0.3,
+    "impact_score": 2.8
+  },
+  {
+    "id": 11,
+    "t": 5,
+    "source": "news",
+    "company": "JPM",
+    "text": "Strong GDP and falling unemployment lift markets, recession fears fade",
+    "tickers": [],
+    "sentiment_score": 0.5,
+    "event_class": "Macroeconomic",
+    "event_confidence": 0.6,
+    "impact_score": 6.0
+  },
+  {
+    "id": 12,
+    "t": 5,
+    "source": "twitter",
+    "company": "BA",
+    "text": "Boeing bankruptcy rumors crash shares, massive sell-off underway $BA",
+    "tickers": [
+      "BA"
+    ],
+    "sentiment_score": -1.0,
+    "event_class": "Credit Event",
+    "event_confidence": 0.6,
+    "impact_score": 10
+  }
+]

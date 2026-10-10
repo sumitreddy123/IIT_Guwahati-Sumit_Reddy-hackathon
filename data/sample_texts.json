@@ -1,0 +1,14 @@
+[
+{"id":1,"t":0,"source":"news","company":"XOM","text":"Missile strikes and new sanctions escalate conflict, oil supply fears grow"},
+{"id":2,"t":0,"source":"twitter","company":"AAPL","text":"Apple unveils new iPhone, strong demand and record preorders $AAPL"},
+{"id":3,"t":1,"source":"news","company":"JPM","text":"Fed signals rate hike as inflation surges; banks brace for slowdown"},
+{"id":4,"t":1,"source":"twitter","company":"TSLA","text":"Tesla recall expands, shares fall sharply, investors worried $TSLA"},
+{"id":5,"t":2,"source":"news","company":"MSFT","text":"Microsoft agrees to acquire AI startup in major deal, analysts upbeat"},
+{"id":6,"t":2,"source":"news","company":"BA","text":"Boeing credit rating downgraded as debt concerns and default risk rise"},
+{"id":7,"t":3,"source":"twitter","company":"NVDA","text":"Nvidia beats expectations, record growth, bullish outlook $NVDA"},
+{"id":8,"t":3,"source":"news","company":"XOM","text":"Ceasefire talks progress, tensions ease and oil prices stabilize"},
+{"id":9,"t":4,"source":"news","company":"AMZN","text":"Amazon launches new logistics product, profit gains expected"},
+{"id":10,"t":4,"source":"twitter","company":"META","text":"Meta faces lawsuit and fine, stock plunges on regulatory fears $META"},
+{"id":11,"t":5,"source":"news","company":"JPM","text":"Strong GDP and falling unemployment lift markets, recession fears fade"},
+{"id":12,"t":5,"source":"twitter","company":"BA","text":"Boeing bankruptcy rumors crash shares, massive sell-off underway $BA"}
+]
