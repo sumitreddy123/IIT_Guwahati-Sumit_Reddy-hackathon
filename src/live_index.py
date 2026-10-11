@@ -28,11 +28,14 @@ class LiveIndex:
 
     def add(self, sig, now):
         """Apply one engine signal; returns the index members it moved (empty if none are in the universe)."""
-        c = sig["sentiment_score"] * sig["impact_score"] / 10 * 0.5 ** (max(0.0, now - sig.get("ts", now)) / self.hl)
-        names = [sig.get("company")] + list(sig.get("tickers") or [])
-        hit = [t for t in dict.fromkeys(TICKER_MAP.get(x, x) for x in names if x) if t in self.mood.index]
-        for t in hit:
-            self.mood[t] += c
+        f = sig["impact_score"] / 10 * 0.5 ** (max(0.0, now - sig.get("ts", now)) / self.hl)
+        es = sig.get("entity_sentiment") or {}  # per-stock scores when the text names several stocks
+        hit = []
+        for x in [sig.get("company")] + list(sig.get("tickers") or []):
+            t = TICKER_MAP.get(x, x) if x else None
+            if t in self.mood.index and t not in hit:
+                hit.append(t)
+                self.mood[t] += es.get(x, sig["sentiment_score"]) * f
         return hit
 
     def weights(self):

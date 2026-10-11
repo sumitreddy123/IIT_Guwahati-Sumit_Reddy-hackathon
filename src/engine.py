@@ -18,6 +18,10 @@ EVENTS = {  # keywords, base severity (1-10)
     "Regulatory/Legal": ("lawsuit fine regulation regulator regulatory legislation tax probe antitrust sec investigation taxation levy ban crackdown penalty penalties".split(), 6),
     "Operational/Product Incident": (["system crash", "system failure", "outage", "glitch", "malfunction", "defect", "recall",
                                       "data breach", "cyberattack", "hack", "safety"], 6),
+    "Analyst Rating/Price Target": (["analyst", "price target", "upgrade", "initiates coverage", "overweight", "underweight", "outperform"], 3),
+    "Management/Corporate Action": (["steps down", "resign", "new ceo", "layoff", "buyback", "dividend", "stock split", "spin-off",
+                                     "share repurchase", "hiring freeze"], 5),
+    "Market Commentary": ([], 2),  # opinion / price talk / technical analysis: no discrete event (zero-shot label only)
 }
 # zero-shot works better with descriptive labels than with bare class names
 LABELS = {
@@ -29,6 +33,9 @@ LABELS = {
     "company earnings or financial performance": "Earnings",
     "government regulation, tax policy, lawsuit or legal investigation": "Regulatory/Legal",
     "operational failure, system outage, product defect, recall or safety incident": "Operational/Product Incident",
+    "analyst rating, upgrade or price target change": "Analyst Rating/Price Target",
+    "management change, layoffs, buyback, dividend or stock split": "Management/Corporate Action",
+    "market commentary, opinion, price movement or technical analysis": "Market Commentary",
     "other": "Other",
 }
 POS = set("strong record beats upbeat bullish gains growth lift surge easing ease stabilize stabilizes progress agrees fade".split())
@@ -132,13 +139,35 @@ def policy_adjust(text, s, event):
     s += min(0.6, 0.3 * pos) if pos else max(-0.6, -0.3 * neg)  # relief wins
     return round(max(-1, min(1, s)), 3), True
 
+# Per-stock sentiment for texts naming several stocks. Text-level sentiment would move every named stock the same
+# way, so a price-move word attaches to the nearest stock name (within 3 words; on a tie the name before it) and sets
+# that stock's sign. Stocks with no such cue keep the text-level score. A heuristic, not true targeted sentiment.
+DOWN = set("fall falls falling fell drop drops dropping dropped plunge plunges plunging plunged slump slumps slumped tumble tumbles tumbled sink sinks sinking sank slide slides sliding slid decline declines declining declined tank tanks tanked crash crashes crashed lose loses losing lost".split())
+UP = set("rise rises rising rose surge surges surging surged jump jumps jumping jumped soar soars soaring soared rally rallies rallied gain gains gaining gained climb climbs climbing climbed".split())
+
+def entity_sentiments(text, tickers, doc_score):
+    if len(tickers) < 2:
+        return {}
+    toks = re.findall(r"[$\w'-]+", text.lower())
+    names = {t: {n for n, tk in ALIASES.items() if tk == t} | {"$" + t.lower()} for t in tickers}
+    pos = [(i, t) for i, w in enumerate(toks) for t in tickers if w in names[t]]
+    votes = {t: 0 for t in tickers}
+    for i, w in enumerate(toks):
+        d = -1 if w in DOWN else 1 if w in UP else 0
+        near = [(abs(i - j), 0 if j < i else 1, t) for j, t in pos if abs(i - j) <= 3] if d else []
+        if near:
+            votes[min(near)[2]] += d
+    if not any(votes.values()):
+        return {}
+    return {t: (0.6 if v > 0 else -0.6 if v < 0 else doc_score) for t, v in votes.items()}
+
 def analyze(item, sent=None):
     raw = sent if sent is not None else sentiment(item["text"])
     e, conf = classify_event(item["text"])
     s, adjusted = policy_adjust(item["text"], raw, e)
     tickers = extract_tickers(item["text"])
     return {**item, "company": item.get("company") or (tickers[0] if tickers else None),
-            "tickers": tickers, "sentiment_score": s, "sentiment_raw": raw, "policy_adjusted": adjusted,
+            "tickers": tickers, "entity_sentiment": entity_sentiments(item["text"], tickers, s), "sentiment_score": s, "sentiment_raw": raw, "policy_adjusted": adjusted,
             "event_class": e, "event_confidence": conf, "impact_score": impact(item["text"], e, s, item["source"])}
 
 def fetch_newsapi(query="stock market", n=20):

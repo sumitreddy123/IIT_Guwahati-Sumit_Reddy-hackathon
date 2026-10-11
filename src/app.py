@@ -1,6 +1,7 @@
 import json, time
 import pandas as pd, streamlit as st
 import engine, live_feed
+from live_index import LiveIndex, LIVE_UNIVERSE
 
 ROOT, DOCS = engine.ROOT, engine.ROOT / "docs"
 st.set_page_config(page_title="AI/NLP Risk Engine", layout="wide")
@@ -99,6 +100,7 @@ with t1:
 with t2:
     txt = st.text_area("Paste a headline or tweet", "Fed signals rate hike as inflation surges; banks brace for slowdown")
     kind = st.radio("Source type", ["news", "twitter"], horizontal=True)
+    pick = st.selectbox("Apply to stock", ["auto-detect from text"] + LIVE_UNIVERSE)
     if st.button("Analyze") and txt.strip():
         with st.spinner("Loading models on first use (can take a minute)..."):
             r = engine.analyze({"id": 0, "t": 0, "source": kind, "company": None, "text": txt})
@@ -107,19 +109,50 @@ with t2:
         c[0].metric("Sentiment (-1..1)", r["sentiment_score"]); c[1].metric("Event class", r["event_class"])
         c[2].metric("Event confidence", r["event_confidence"]); c[3].metric("Impact (1-10)", r["impact_score"])
         st.write("Tickers found:", ", ".join(r["tickers"]) or "none")
+        if r.get("entity_sentiment"):
+            st.write("Per-stock sentiment (a price-move word next to a stock name sets its sign):",
+                     ", ".join(f"{t} {v:+.2f}" for t, v in r["entity_sentiment"].items()))
         if r.get("policy_adjusted"):
             st.info(f"Rule-based policy adjustment applied: model score {r['sentiment_raw']} was nudged to {r['sentiment_score']} "
                     "(tax/tariff/ban cue with a weak model score). This rule is a heuristic, not validated.")
         if backend != "finbert":
             st.info("Transformer models are not installed, so the keyword fallback was used. "
                     "Install requirements-rebuild.txt for FinBERT and zero-shot classification.")
+        if pick != "auto-detect from text":
+            r["company"], r["tickers"], r["entity_sentiment"] = pick, [pick], {}
+        now = time.time()
+        idx = st.session_state.setdefault("demo_idx", LiveIndex())
+        hist = st.session_state.setdefault("demo_hist", [])
+        idx.decay(now)
+        hit = idx.add(r, now)
+        hist.append(idx.weights())
+        if hit:
+            st.success("Module A: index updated for " + ", ".join(hit) + ". See the weights below.")
+        else:
+            st.info("Module A: no stock from the index universe was found in this text, so the weights did not change. "
+                    "Name a company or pick a stock above.")
+
+    hist = st.session_state.get("demo_hist", [])
+    if hist:
+        st.subheader("Module A: index weights after each analyzed text")
+        n = len(LIVE_UNIVERSE)
+        steps = pd.DataFrame([pd.Series(1 / n, index=LIVE_UNIVERSE)] + hist).reset_index(drop=True)
+        steps.index.name = "step"
+        a, b = st.columns([3, 2])
+        a.caption("Weights per step (step 0 = equal weight)"); a.line_chart(steps)
+        b.caption("Latest tilt vs equal weight (percentage points)")
+        b.bar_chart(((hist[-1] - 1 / n) * 100).sort_values().rename("tilt (pp)"))
+        if st.button("Reset demo index"):
+            st.session_state["demo_idx"], st.session_state["demo_hist"] = LiveIndex(), []
+            st.rerun()
 
 with t3:
     w = cread("backtest_v2_weights.csv", "backtest_weights.csv")
     if w is None:
         st.warning("No weights found. Run: python src/backtest_v2.py")
     else:
-        st.caption("Long-only tilt: index weights over time (rebalanced every Friday)")
+        st.caption("Long-only tilt: index weights over time (rebalanced every Friday). Precomputed from the historical backtest, so it does not "
+                   "react to new text; for live changes see the Live feed tab and the Analyze text tab.")
         st.area_chart(w)
         st.caption(f"Latest weights (equal weight would be {1 / len(w.columns):.1%} each)")
         st.bar_chart(w.iloc[-1].sort_values(ascending=False).rename("weight"))
