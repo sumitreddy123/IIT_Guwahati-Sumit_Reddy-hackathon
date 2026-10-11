@@ -3,7 +3,7 @@
 **Candidate Name:** Sumit Reddy
 **College Email ID:** sumit.reddy@iitg.ac.in
 **College / Campus:** IIT Guwahati
-**Demo Video Link:** TODO (YouTube, unlisted)
+**Demo Video Link:** https://youtu.be/cNOGz8xl_yc (YouTube, unlisted)
 **Slide Deck Link (if hosted externally):** not hosted externally - see [`docs/presentation.pdf`](docs/presentation.pdf)
 
 ## 1. Project Overview / Problem Statement & Approach
