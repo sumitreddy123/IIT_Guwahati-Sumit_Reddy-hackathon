@@ -57,7 +57,8 @@ def live_panel():
         st.info("Pipeline is up, waiting for the first items...")
         return
     for _, r in sig[sig.impact_score >= 7].tail(3).iloc[::-1].iterrows():
-        st.warning(f"High impact ({r.impact_score}) - {r.company} - {r.event_class}: {r.text[:160]}")
+        who = ", ".join(r.affected) if isinstance(r.affected, list) and r.affected else (r.company if isinstance(r.company, str) else "market-wide")
+        st.warning(f"High impact ({r.impact_score}) - {who} - {r.event_class}: {r.text[:160]}")
     sig["affected"] = sig["affected"].apply(lambda x: ", ".join(x) if isinstance(x, list) else "")
     cols = ["date", "feed", "source", "company", "sentiment_score", "event_class", "impact_score", "affected", "text"]
     st.dataframe(sig.iloc[::-1][[c for c in cols if c in sig]].head(100))

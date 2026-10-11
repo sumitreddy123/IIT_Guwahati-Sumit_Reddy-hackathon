@@ -4,7 +4,7 @@
 **College Email ID:** sumit.reddy@iitg.ac.in
 **College / Campus:** IIT Guwahati
 **Demo Video Link:** TODO (YouTube, unlisted)
-**Slide Deck Link (if hosted externally):** not hosted externally - see `docs/presentation.pdf`
+**Slide Deck Link (if hosted externally):** not hosted externally - see [`docs/presentation.pdf`](docs/presentation.pdf)
 
 ## 1. Project Overview / Problem Statement & Approach
 Banks need to turn a constant stream of unstructured text (news, social media) into risk signals that downstream systems can act on. This project builds an **AI/NLP Risk Engine** that ingests text from two source types (financial news via NewsAPI, and Twitter/X posts from a public Kaggle dataset) and outputs, for each text, a **sentiment score** (-1 to 1), an **event class** (Geopolitical, Macroeconomic, Credit Event, Merger/Acquisition, Product Launch, plus Earnings, Regulatory/Legal, Operational/Product Incident, Analyst Rating/Price Target, Management/Corporate Action, and Market Commentary for posts that contain no discrete event) with a confidence, the **tickers** involved, and an **impact score** (1-10).
@@ -19,10 +19,10 @@ The full signals are cached to `data/signals_cache.json` (shown in the dashboard
 - **Code:** `src/engine.py` (NLP engine), `src/ingest.py` (sampling, news fetch, cached build), `src/evaluate_sentiment.py`, `src/fast_signals.py` (FinBERT-only pass for the backtest), `src/backtest_v2.py` (Module A test), `src/app.py` (dashboard), and the live pipeline: `src/stream.py` (poll, analyze, update), `src/live_feed.py` (sources and replay), `src/live_index.py` (streaming Module A). `src/module_a.py` and `src/backtest.py` are an earlier, smaller-sample version kept for reference.
 
 ## 3. Dataset Used
-- **Tweets:** Kaggle "Stock Tweets for Sentiment Analysis and Prediction" (80,793 raw rows, 64,198 usable after cleaning; 22 stocks; 2021-09-30 to 2022-09-29). `data/tweets_sample.csv` is a 1,405-tweet stratified sample (the full file is not committed to keep the repo small). Please check the dataset's Kaggle page for its license.
+- **Tweets:** Kaggle ["Stock Tweets for Sentiment Analysis and Prediction"](https://www.kaggle.com/datasets/equinxx/stock-tweets-for-sentiment-analysis-and-prediction) (80,793 raw rows, 64,198 usable after cleaning; 22 stocks; 2021-09-30 to 2022-09-29). `data/tweets_sample.csv` is a 1,405-tweet stratified sample (the full file is not committed to keep the repo small). Please check the dataset's Kaggle page for its license.
 - **News:** NewsAPI headlines for 12 companies, fetched once and cached in `data/news_cache.json` (206 articles, recent dates, so they are used for the live-signal view only, not the historical backtest).
-- **Sentiment evaluation:** FinancialPhraseBank (Malo et al., 2014; Kaggle "Sentiment Analysis for Financial News", CC BY-NC-SA 4.0), 4,846 labeled headlines in `data/all-data.csv`, used only to evaluate sentiment.
-- **Live feeds (no key needed):** Google News RSS and Reddit search RSS (r/stocks, r/investing, r/wallstreetbets, r/StockMarket), optionally Yahoo Finance headline RSS, polled by `src/stream.py`. Outputs go to `outputs/live_*` and are not committed. Reddit stands in for Twitter/X in live mode, because the Twitter/X API is not free.
+- **Sentiment evaluation:** FinancialPhraseBank (Malo et al., 2014; Kaggle ["Sentiment Analysis for Financial News"](https://www.kaggle.com/datasets/ankurzing/sentiment-analysis-for-financial-news), CC BY-NC-SA 4.0), 4,846 labeled headlines in `data/all-data.csv`, used only to evaluate sentiment.
+- **Live feeds (no key needed):** Google News RSS and Reddit search RSS (r/stocks, r/investing, r/wallstreetbets, r/StockMarket), optionally Yahoo Finance headline RSS, polled by `src/stream.py`. Outputs go to `outputs/live_*`; a snapshot from one real live run (Google News, FinBERT) is committed so the Live feed tab shows data on first open, and running `stream.py` appends to it (`--reset` starts fresh). Reddit stands in for Twitter/X in live mode, because the Twitter/X API is not free.
 - **Prices:** Yahoo Finance via yfinance, cached in `data/prices.csv`. **Synthetic:** `data/sample_texts.json` is a small hand-written sample.
 - **Assumptions:** tweets proxy retail sentiment; a stock-week with no tweets is treated as neutral; the backtest sentiment file (`data/sentiment_large.csv`) covers 8,233 tweets (up to 15 per stock-week, about 7 per stock-week on average), chosen at random with a fixed seed.
 
