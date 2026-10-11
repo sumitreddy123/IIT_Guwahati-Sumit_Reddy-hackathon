@@ -1,4 +1,4 @@
-# AI/NLP Risk Engine - S&P Global & Crisil Campus Hackathon
+# AI/NLP Risk Engine with Sentiment-Driven Index Rebalancing - S&P Global & Crisil Campus Hackathon
 
 **Candidate Name:** Sumit Reddy
 **College Email ID:** sumit.reddy@iitg.ac.in
@@ -8,25 +8,58 @@
 
 ## 1. Project Overview / Problem Statement & Approach
 TODO
+**Demo Video Link:** TODO (YouTube, unlisted)
+**Slide Deck Link (if hosted externally):** not hosted externally - see `docs/presentation.pdf`
+
+## 1. Project Overview / Problem Statement & Approach
+Banks need to turn a constant stream of unstructured text (news, social media) into risk signals that downstream systems can act on. This project builds an **AI/NLP Risk Engine** that ingests text from two source types (financial news via NewsAPI, and Twitter/X posts from a public Kaggle dataset) and outputs, for each text, a **sentiment score** (-1 to 1), an **event class** (Geopolitical, Macroeconomic, Credit Event, Merger/Acquisition, Product Launch, plus Earnings, Regulatory/Legal and Operational/Product Incident) with a confidence, the **tickers** involved, and an **impact score** (1-10).
+
+The full signals are cached to `data/signals_cache.json` (shown in the dashboard). **Module A (tactical index rebalancing)** consumes the engine's sentiment score over a larger tweet sample (`data/sentiment_large.csv`, written by `src/fast_signals.py`, which runs only the engine's sentiment step because the full engine, with zero-shot event classification, is too slow for every tweet). It tilts a 15-stock index (S&P 100 members) toward positively discussed stocks each week, replaying historical data in place of a live feed. The project is evaluated honestly: the sentiment model is scored on a labeled dataset against a keyword baseline, and the rebalancing strategy is tested out-of-sample with no look-ahead, trading costs and a train/test split. **The main finding is negative: weekly tweet sentiment showed no statistically significant ability to predict next-week returns in this sample** (see section 5).
 
 ## 2. Architecture & Tech Stack
-TODO (embed docs/architecture.png)
+![Architecture](docs/architecture.png)
+
+- **Sentiment:** FinBERT (`ProsusAI/finbert`), score = P(positive) - P(negative). **Event class:** zero-shot BART (`facebook/bart-large-mnli`) with a whole-word keyword fallback when model confidence is low. **Impact:** event severity x sentiment strength x source weight (a hand-set heuristic, not validated).
+- **Stack:** Python, Hugging Face Transformers + PyTorch, pandas/numpy, yfinance (prices), NewsAPI, Streamlit (dashboard), matplotlib, scikit-learn (evaluation).
+- **Code:** `src/engine.py` (NLP engine), `src/ingest.py` (sampling, news fetch, cached build), `src/evaluate_sentiment.py`, `src/fast_signals.py` (FinBERT-only pass for the backtest), `src/backtest_v2.py` (Module A test), `src/app.py` (dashboard). `src/module_a.py` and `src/backtest.py` are an earlier, smaller-sample version kept for reference.
 
 ## 3. Dataset Used
-- `data/sample_texts.json`: small hand-written sample of news/tweet-style texts (synthetic).
-- `data/all-data.csv`: FinancialPhraseBank (Malo et al., 2014), Kaggle "Sentiment Analysis for Financial News", CC BY-NC-SA 4.0. Used only to evaluate sentiment.
+- **Tweets:** Kaggle "Stock Tweets for Sentiment Analysis and Prediction" (80,793 raw rows, 64,198 usable after cleaning; 22 stocks; 2021-09-30 to 2022-09-29). `data/tweets_sample.csv` is a 1,405-tweet stratified sample (the full file is not committed to keep the repo small). Please check the dataset's Kaggle page for its license.
+- **News:** NewsAPI headlines for 12 companies, fetched once and cached in `data/news_cache.json` (206 articles, recent dates, so they are used for the live-signal view only, not the historical backtest).
+- **Sentiment evaluation:** FinancialPhraseBank (Malo et al., 2014; Kaggle "Sentiment Analysis for Financial News", CC BY-NC-SA 4.0), 4,846 labeled headlines in `data/all-data.csv`, used only to evaluate sentiment.
+- **Prices:** Yahoo Finance via yfinance, cached in `data/prices.csv`. **Synthetic:** `data/sample_texts.json` is a small hand-written sample.
+- **Assumptions:** tweets proxy retail sentiment; a stock-week with no tweets is treated as neutral; the backtest sentiment file (`data/sentiment_large.csv`) covers 8,233 tweets (up to 15 per stock-week, about 7 per stock-week on average), chosen at random with a fixed seed.
 
 ## 4. Quickstart & Installation
-Runtime: Python 3.11 on TODO
+Runtime: Python 3.x (TODO: add your version from `python --version`) on Windows (TODO: add version)
+
+The dashboard reads cached results, so it needs only the light requirements (no model downloads, no API keys, no internet):
 ```bash
-git clone TODO
+git clone https://github.com/sumitreddy123/IIT_Guwahati-Sumit_Reddy-hackathon
 cd IIT_Guwahati-Sumit_Reddy-hackathon
 pip install -r requirements.txt
-python src/engine.py
 streamlit run src/app.py
+```
+Open http://localhost:8501. If Streamlit asks for an email on first run, just press Enter. The "Analyze text" tab loads the models on first use only if `requirements-rebuild.txt` is installed; otherwise it uses a keyword fallback and says so.
+
+**Optional - reproduce the cached data** (slow; downloads about 2 GB of models and needs your own NewsAPI key):
+```bash
+pip install -r requirements-rebuild.txt
+python src/evaluate_sentiment.py                      # FinBERT vs baseline (set NLP_BACKEND=lexicon for the baseline)
+python src/ingest.py sample --csv path/to/stock_tweets.csv --n 1500
+python src/ingest.py news                             # needs NEWSAPI_KEY
+python src/ingest.py build                            # full engine, resumable
+python src/fast_signals.py --csv path/to/stock_tweets.csv --per-cell 15
+python src/backtest_v2.py
 ```
 
 ## 5. Key Results & Domain Impact
-TODO
+**Sentiment model (FinancialPhraseBank, 4,846 headlines):** FinBERT reaches accuracy 0.828 and macro F1 0.830, against 0.603 and 0.299 for a keyword baseline, which mostly predicted "neutral". FinBERT was fine-tuned on this dataset, so these scores are optimistic for new text.
 
-*AI assistance (Claude) was used while building this project.*
+**Module A test (15 S&P 100 stocks, weekly, 10 bps cost assumption, settings fixed in advance):** TODO - paste the results table and a one-sentence reading from `docs/backtest_v2_results.json` after re-running `python src/backtest_v2.py`.
+
+**Domain impact:** the engine shows how unstructured text becomes structured, machine-readable risk signals (sentiment, event type, tickers, impact) that a bank's downstream tools could consume, and the evaluation shows how to test such a signal rigorously before relying on it. In this sample the signal alone was not enough to drive allocation, which is itself a useful, honest result for risk teams.
+
+**Limitations:** the data is a historical replay, not a live stream; the index is the 15 S&P 100 members among the tweet dataset's 22 stocks (current membership applied to 2021-22 data); Module B (stress testing) was not built; FinBERT scores implied negative news (for example a tax rise, stated without negative wording) as near-neutral; the zero-shot/keyword event classifier is imperfect; the impact score and the sector-to-ticker map are hand-written heuristics; one year of data and about 7 tweets per stock-week is thin; costs and slippage are simplified. **Next steps:** a tweet-specific sentiment model (FinTwitBERT) with a model comparison, using all 64k tweets, event-level and volatility signals, and a stress-testing module.
+
+*AI assistance (Claude) was used to help build this project; I reviewed and ran all code.*

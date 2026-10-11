@@ -10,12 +10,14 @@ MODE = os.getenv("NLP_BACKEND", "auto")  # auto | lexicon
 
 EVENTS = {  # keywords, base severity (1-10)
     "Geopolitical": ("war sanction missile conflict invasion tension tariff embargo ceasefire".split(), 7),
-    "Macroeconomic": ("inflation fed rate gdp unemployment recession cpi slowdown".split(), 6),
+    "Macroeconomic": ("inflation fed gdp unemployment recession cpi slowdown".split() + ["interest rate", "rate hike", "rate cut"], 6),
     "Credit Event": ("default downgrade bankruptcy debt insolvency restructuring".split(), 8),
     "Merger/Acquisition": ("acquire acquisition merger takeover buyout deal".split(), 5),
-    "Product Launch": ("launch unveil launches unveils release introduces".split(), 3),
+    "Product Launch": ("launch unveil release introduce".split(), 3),
     "Earnings": ("earnings beats profit revenue guidance expectations quarterly".split(), 4),
-    "Regulatory/Legal": ("lawsuit fine regulatory probe recall antitrust sec investigation".split(), 6),
+    "Regulatory/Legal": ("lawsuit fine regulation regulator regulatory legislation tax probe antitrust sec investigation taxation levy ban crackdown penalty penalties".split(), 6),
+    "Operational/Product Incident": (["system crash", "system failure", "outage", "glitch", "malfunction", "defect", "recall",
+                                      "data breach", "cyberattack", "hack", "safety"], 6),
 }
 # zero-shot works better with descriptive labels than with bare class names
 LABELS = {
@@ -25,7 +27,8 @@ LABELS = {
     "merger or acquisition": "Merger/Acquisition",
     "product launch": "Product Launch",
     "company earnings or financial performance": "Earnings",
-    "legal or regulatory action, lawsuit or product recall": "Regulatory/Legal",
+    "government regulation, tax policy, lawsuit or legal investigation": "Regulatory/Legal",
+    "operational failure, system outage, product defect, recall or safety incident": "Operational/Product Incident",
     "other": "Other",
 }
 POS = set("strong record beats upbeat bullish gains growth lift surge easing ease stabilize stabilizes progress agrees fade".split())
@@ -35,6 +38,13 @@ SRC_W = {"news": 1.0, "twitter": 0.8}
 ALIASES = {"apple": "AAPL", "microsoft": "MSFT", "jpmorgan": "JPM", "exxon": "XOM", "tesla": "TSLA",
            "nvidia": "NVDA", "amazon": "AMZN", "meta": "META", "facebook": "META",
            "boeing": "BA", "google": "GOOGL", "alphabet": "GOOGL"}
+
+# hand-written sector -> tickers (approximate; edit to match your universe)
+SECTORS = {"e-commerce": ["AMZN"], "ecommerce": ["AMZN"], "online retail": ["AMZN"], "social media": ["META"],
+           "electric vehicle": ["TSLA", "F", "NIO", "XPEV"], "electric car": ["TSLA", "F", "NIO", "XPEV"],
+           "automaker": ["TSLA", "F"], "streaming": ["NFLX", "DIS"], "semiconductor": ["AMD", "INTC", "TSM"],
+           "chipmaker": ["AMD", "INTC", "TSM"], "cloud": ["MSFT", "AMZN", "CRM"], "airline": ["BA"],
+           "aerospace": ["BA", "NOC"], "payments": ["PYPL"]}
 
 _pipes = {}
 def _pipe(task, model):
@@ -76,7 +86,7 @@ def sentiment(text):
 def classify_event(text):
     """Returns (label, confidence). Zero-shot if available, else keyword match."""
     low = text.lower()
-    hits = {e: sum(bool(re.search(rf"\b{k}", low)) for k in kw) for e, (kw, _) in EVENTS.items()}
+    hits = {e: sum(bool(re.search(rf"\b{k}(?:s|es|d|ed|ing)?\b", low)) for k in kw) for e, (kw, _) in EVENTS.items()}  # whole words only
     kbest = max(hits, key=hits.get)
     z = _pipe(*ZEROSHOT)
     if not z:
@@ -93,6 +103,9 @@ def extract_tickers(text):
     found = re.findall(r"\$([A-Z]{1,5})\b", text)
     low = text.lower()
     found += [t for name, t in ALIASES.items() if re.search(rf"\b{name}\b", low)]
+    for phrase, ts in SECTORS.items():
+        if re.search(rf"\b{re.escape(phrase)}\b", low):
+            found += ts
     return list(dict.fromkeys(found))
 
 def impact(text, event, sent, source):
@@ -100,13 +113,33 @@ def impact(text, event, sent, source):
     boost = 1 + 0.15 * sum(w.strip(".,").lower() in INTENSE for w in text.split())
     return round(min(10, max(1, base * (0.5 + abs(sent)) * SRC_W.get(source, 0.8) * boost)), 1)
 
+# Rule layer (heuristic, NOT validated): FinBERT scores burden-without-negative-words, e.g. "twice the
+# tax rates", as neutral. Applied only to Regulatory/Legal or Geopolitical events with a weak score and
+# no earnings context; relief words ("tax cut") flip the sign. Raw model score is kept as sentiment_raw.
+POLICY_NEG = set("tax taxes taxation tariff tariffs levy penalty penalties crackdown ban banned".split())
+POLICY_POS = set("cut cuts cutting relief exemption exempt lower reduce reduced scrapped repeal".split())
+EARNINGS_WORDS = set("profit profits revenue revenues earnings sales income quarter quarterly".split())
+
+def policy_adjust(text, s, event):
+    if event not in ("Regulatory/Legal", "Geopolitical") or abs(s) >= 0.25:
+        return s, False
+    w = {x.strip(".,$;:").lower() for x in text.split()}
+    if w & EARNINGS_WORDS:
+        return s, False
+    neg, pos = len(w & POLICY_NEG), len(w & POLICY_POS)
+    if not (neg or pos):
+        return s, False
+    s += min(0.6, 0.3 * pos) if pos else max(-0.6, -0.3 * neg)  # relief wins
+    return round(max(-1, min(1, s)), 3), True
+
 def analyze(item, sent=None):
-    s = sent if sent is not None else sentiment(item["text"])
+    raw = sent if sent is not None else sentiment(item["text"])
     e, conf = classify_event(item["text"])
+    s, adjusted = policy_adjust(item["text"], raw, e)
     tickers = extract_tickers(item["text"])
     return {**item, "company": item.get("company") or (tickers[0] if tickers else None),
-            "tickers": tickers, "sentiment_score": s, "event_class": e, "event_confidence": conf,
-            "impact_score": impact(item["text"], e, s, item["source"])}
+            "tickers": tickers, "sentiment_score": s, "sentiment_raw": raw, "policy_adjusted": adjusted,
+            "event_class": e, "event_confidence": conf, "impact_score": impact(item["text"], e, s, item["source"])}
 
 def fetch_newsapi(query="stock market", n=20):
     key = os.getenv("NEWSAPI_KEY")

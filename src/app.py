@@ -62,6 +62,9 @@ with t2:
         c[0].metric("Sentiment (-1..1)", r["sentiment_score"]); c[1].metric("Event class", r["event_class"])
         c[2].metric("Event confidence", r["event_confidence"]); c[3].metric("Impact (1-10)", r["impact_score"])
         st.write("Tickers found:", ", ".join(r["tickers"]) or "none")
+        if r.get("policy_adjusted"):
+            st.info(f"Rule-based policy adjustment applied: model score {r['sentiment_raw']} was nudged to {r['sentiment_score']} "
+                    "(tax/tariff/ban cue with a weak model score). This rule is a heuristic, not validated.")
         if backend != "finbert":
             st.info("Transformer models are not installed, so the keyword fallback was used. "
                     "Install requirements-rebuild.txt for FinBERT and zero-shot classification.")
