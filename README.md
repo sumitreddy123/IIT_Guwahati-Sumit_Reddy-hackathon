@@ -1,7 +1,7 @@
 # AI/NLP Risk Engine with Sentiment-Driven Index Rebalancing - S&P Global & Crisil Campus Hackathon
 
 **Candidate Name:** Sumit Reddy
-**College Email ID:** TODO
+**College Email ID:** sumit.reddy@iitg.ac.in
 **College / Campus:** IIT Guwahati
 **Demo Video Link:** TODO (YouTube, unlisted)
 **Slide Deck Link (if hosted externally):** not hosted externally - see `docs/presentation.pdf`
@@ -27,7 +27,7 @@ The full signals are cached to `data/signals_cache.json` (shown in the dashboard
 - **Assumptions:** tweets proxy retail sentiment; a stock-week with no tweets is treated as neutral; the backtest sentiment file (`data/sentiment_large.csv`) covers 8,233 tweets (up to 15 per stock-week, about 7 per stock-week on average), chosen at random with a fixed seed.
 
 ## 4. Quickstart & Installation
-Runtime: Python 3.x (TODO: add your version from `python --version`) on Windows (TODO: add version)
+Runtime: Python 3.13.4 on Windows 11 Version 26H2
 
 The dashboard reads cached results, so it needs only the light requirements (no model downloads, no API keys, no internet):
 ```bash
@@ -38,7 +38,7 @@ streamlit run src/app.py
 ```
 Open http://localhost:8501. If Streamlit asks for an email on first run, just press Enter. The "Analyze text" tab loads the models on first use only if `requirements-rebuild.txt` is installed; otherwise it uses a keyword fallback and says so.
 
-**Live feed tab** (optional; run in a second terminal while the dashboard is open):
+**Live feed tab** (run in a second terminal while the dashboard is open):
 ```bash
 python src/stream.py --replay          # offline demo: cached data replayed as a simulated feed (labeled REPLAY)
 python src/stream.py                   # live: Google News + Reddit every 2 minutes (needs internet and the models)
