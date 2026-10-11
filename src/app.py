@@ -1,11 +1,12 @@
-import json
+import json, time
 import pandas as pd, streamlit as st
-import engine
+import engine, live_feed
 
 ROOT, DOCS = engine.ROOT, engine.ROOT / "docs"
 st.set_page_config(page_title="AI/NLP Risk Engine", layout="wide")
 st.title("AI/NLP Risk Engine + Module A (sentiment-driven rebalancing)")
-st.caption("Reads cached results, so it opens instantly. Models load only if you use the 'Analyze text' tab.")
+st.caption("Reads cached results, so it opens instantly. Models load only if you use the 'Analyze text' tab. "
+           "The 'Live feed' tab needs `python src/stream.py` running in a second terminal.")
 
 
 @st.cache_data
@@ -25,7 +26,51 @@ def cread(*names):
             return pd.read_csv(DOCS / n, index_col=0, parse_dates=True)
 
 
-t1, t2, t3, t4 = st.tabs(["Risk signals", "Analyze text", "Index weights", "Backtest evidence"])
+def live_panel():
+    state, sig, w = live_feed.read_live()
+    if state is None:
+        st.info("No live data yet. In a second terminal run `python src/stream.py` (live news + Reddit) "
+                "or `python src/stream.py --replay` (offline demo from cached data).")
+        return
+    age = time.time() - state["updated"]
+    running = age < 3 * state["interval"] + 30
+    c = st.columns(5)
+    c[0].metric("Feed", "LIVE" if state["mode"] == "live" else "REPLAY (simulated)")
+    c[1].metric("Pipeline", "running" if running else "stopped")
+    c[2].metric("Last poll", f"{int(age)} s ago")
+    c[3].metric("Signals processed", state["total"])
+    c[4].metric("NLP backend", state["backend"])
+    if state["mode"] != "live":
+        st.warning("Replay mode: items come from cached historical data and are stamped with the current time. This is not a live feed.")
+    if not running:
+        st.error("The pipeline is not running. Restart it with `python src/stream.py`.")
+    st.caption("Sources: " + " | ".join(f"{k}: {v['items']} items" + (f" (errors: {'; '.join(v['errors'])})" if v["errors"] else "")
+                                       for k, v in state["sources"].items()))
+    if not w.empty:
+        a, b = st.columns([3, 2])
+        a.caption("Index weights over time (UTC). Equal weight = 1/N.")
+        a.line_chart(w)
+        b.caption("Latest tilt vs equal weight (percentage points)")
+        b.bar_chart(((w.iloc[-1] - 1 / w.shape[1]) * 100).sort_values().rename("tilt (pp)"))
+    if sig.empty:
+        st.info("Pipeline is up, waiting for the first items...")
+        return
+    for _, r in sig[sig.impact_score >= 7].tail(3).iloc[::-1].iterrows():
+        st.warning(f"High impact ({r.impact_score}) - {r.company} - {r.event_class}: {r.text[:160]}")
+    sig["affected"] = sig["affected"].apply(lambda x: ", ".join(x) if isinstance(x, list) else "")
+    cols = ["date", "feed", "source", "company", "sentiment_score", "event_class", "impact_score", "affected", "text"]
+    st.dataframe(sig.iloc[::-1][[c for c in cols if c in sig]].head(100))
+
+
+t0, t1, t2, t3, t4 = st.tabs(["Live feed", "Risk signals", "Analyze text", "Index weights", "Backtest evidence"])
+
+with t0:
+    frag = getattr(st, "fragment", None)  # auto-refresh needs Streamlit >= 1.37
+    if frag:
+        frag(run_every=4)(live_panel)()
+    else:
+        live_panel()
+        st.button("Refresh")
 
 with t1:
     df = signals()
